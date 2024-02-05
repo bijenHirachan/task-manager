@@ -14,6 +14,7 @@ export const projectApi = createApi({
       return headers;
     },
   }),
+  refetchOnMountOrArgChange: true,
   tagTypes: "Projects",
   endpoints: (builder) => ({
     getProjects: builder.query({

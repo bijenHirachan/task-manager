@@ -5,6 +5,7 @@ import { logout } from "../store/authSlice";
 import axios from "axios";
 import { backendUrl } from "../main";
 import toast from "react-hot-toast";
+import { projectApi } from "../store/projectApi";
 
 const AuthLayout = ({ children }) => {
   const { user, token } = useSelector((state) => state.auth);
