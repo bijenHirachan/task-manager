@@ -13,9 +13,12 @@ import {
 } from "../store/taskApi";
 import ButtonLoader from "../components/ButtonLoader";
 import { useGetProjectsQuery } from "../store/projectApi";
+import Modal from "../components/Modal";
 
 const EditTask = () => {
   const { id } = useParams();
+
+  const [showModal, setShowModal] = useState(false);
 
   const { error, isLoading, data, isSuccess } = useShowTaskQuery({ id });
 
@@ -87,17 +90,42 @@ const EditTask = () => {
 
   return (
     <AuthLayout>
+      <Modal show={showModal} maxWidth="lg" onClose={() => setShowModal(false)}>
+        <div className="p-4 flex flex-col gap-2">
+          <h2 className="text-one font-semibold tracking-wid">
+            Delete {data?.data?.title}
+          </h2>
+          <p className="text-sm text-one tracking-wide">
+            Are you sure you want to delete this task? Be careful because it
+            can't be undone.
+          </p>
+
+          <div className="flex gap-1">
+            <button
+              onClick={() => setShowModal(false)}
+              className="bg-gray-500 text-gray-50 px-2 py-1 rounded text-xs hover:opacity-80 transition-opacity delay-75"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => deleteTask({ id })}
+              className="bg-red-500 text-red-50 px-2 py-1 rounded text-xs hover:opacity-80 transition-opacity delay-75"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
       <div className="my-8">
         <div className="flex justify-between mb-12">
           <h4 className="text-four font-bold tracking-wider text-2xl mb-4">
             Update Task
           </h4>
           <button
-            onClick={() => deleteTask({ id })}
-            disabled={deleteLoading}
-            className="rounded px-2 py-1 bg-red-500 outline-none focus:ring-0 hover:opacity-50 transition-opacity delay-75 text-four text-sm"
+            onClick={() => setShowModal(true)}
+            className="rounded px-2 py-1 h-8 bg-red-500 outline-none focus:ring-0 hover:opacity-50 transition-opacity delay-75 text-four text-sm"
           >
-            {deleteLoading ? <ButtonLoader /> : <>Delete Task</>}
+            Delete Task
           </button>
         </div>
         {isLoading ? (

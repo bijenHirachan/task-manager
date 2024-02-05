@@ -1,144 +1,3 @@
-// import axios from "axios";
-// import React, { useState } from "react";
-// import { useParams } from "react-router-dom";
-// import { backendUrl } from "../main";
-// import toast from "react-hot-toast";
-// import { useSelector } from "react-redux";
-// import AuthLayout from "../layout/AuthLayout";
-// import Task from "../components/Task";
-// import Loader from "../components/Loader";
-
-// const ProjectDetail = () => {
-//   const { token } = useSelector((state) => state.auth);
-//   const [project, setProject] = useState(null);
-
-//   const [title, setTitle] = useState("");
-
-//   const [loading, setLoading] = useState(false);
-
-//   const { id } = useParams();
-
-//   const fetchProject = async () => {
-//     setLoading(true);
-//     try {
-//       const res = await axios.get(`${backendUrl}/projects/${id}`, {
-//         headers: {
-//           Authorization: `Bearer ${token}`,
-//         },
-//       });
-//       setProject(res.data.data);
-//       setLoading(false);
-//     } catch (error) {
-//       toast.error(error.response.data.message);
-//       setLoading(false);
-//     }
-//   };
-
-//   const createTask = async (e) => {
-//     e.preventDefault();
-//     setLoading(true);
-//     try {
-//       const res = await axios.post(
-//         `${backendUrl}/tasks`,
-//         {
-//           title,
-//           project_id: id,
-//         },
-//         {
-//           headers: {
-//             Authorization: `Bearer ${token}`,
-//             "Content-Type": "application/json",
-//           },
-//         }
-//       );
-
-//       setProject((prev) => ({
-//         ...prev,
-//         tasks: [...prev.tasks, res.data.data],
-//       }));
-//       setTitle("");
-//       setLoading(false);
-//     } catch (error) {
-//       toast.error(error.response.data.message);
-//       setLoading(false);
-//     }
-//   };
-
-//   useState(() => {
-//     if (token) {
-//       fetchProject();
-//     }
-//   }, [id]);
-//   return (
-//     <AuthLayout>
-//       <div className="my-8">
-//         <h4 className="text-four font-bold tracking-wider text-2xl mb-4">
-//           {project?.title}
-//         </h4>
-//         <form onSubmit={createTask} className="flex">
-//           <input
-//             className="rounded-l border-none outline-none focus:ring-0 p-2"
-//             type="text"
-//             placeholder="Task title"
-//             value={title}
-//             onChange={(e) => setTitle(e.target.value)}
-//           />
-//           <button className="bg-four text-one font-semibold text-sm p-2 rounded-r">
-//             Create
-//           </button>
-//         </form>
-//       </div>
-
-//       {loading ? (
-//         <Loader />
-//       ) : (
-//         <>
-//           <div className="mb-4">
-//             {project?.members?.length > 0 && (
-//               <>
-//                 <h4 className="text-four font-bold tracking-wider text-2xl mb-4">
-//                   Members
-//                 </h4>
-//                 <div className="flex gap-4">
-//                   {project.members.map((member) => (
-//                     <div
-//                       key={member.id}
-//                       className="bg-four text-one px-2 py-1 rounded"
-//                     >
-//                       <h3 className="font-semibold text-sm tracking-wide leading-7">
-//                         {member.name}
-//                       </h3>
-//                       <p className="underline text-xs tracking-wide leading-7">
-//                         {member.email}
-//                       </p>
-//                     </div>
-//                   ))}
-//                 </div>
-//               </>
-//             )}
-//           </div>
-
-//           <div>
-//             <h4 className="text-four font-bold tracking-wider text-2xl mb-4">
-//               Tasks
-//             </h4>
-
-//             {project?.tasks?.length > 0 && (
-//               <div className="flex flex-col gap-4">
-//                 {project.tasks.map((task) => (
-//                   <Task task={task} key={task.id} />
-//                 ))}
-//               </div>
-//             )}
-//           </div>
-//         </>
-//       )}
-//     </AuthLayout>
-//   );
-// };
-
-// export default ProjectDetail;
-
 import React, { useEffect, useState } from "react";
 import AuthLayout from "../layout/AuthLayout";
 import {
@@ -153,11 +12,14 @@ import Loader from "../components/Loader";
 import TaskTable from "../components/TaskTable";
 import toast from "react-hot-toast";
 import ButtonLoader from "../components/ButtonLoader";
+import Modal from "../components/Modal";
 
 const ProjectDetail = () => {
   const { id } = useParams();
 
   const [title, setTitle] = useState("");
+
+  const [showModal, setShowModal] = useState(false);
 
   const [user, setUser] = useState("");
 
@@ -249,6 +111,32 @@ const ProjectDetail = () => {
 
   return (
     <AuthLayout>
+      <Modal show={showModal} maxWidth="lg" onClose={() => setShowModal(false)}>
+        <div className="p-4 flex flex-col gap-2">
+          <h2 className="text-one font-semibold tracking-wid">
+            Delete {data?.data?.title}
+          </h2>
+          <p className="text-sm text-one tracking-wide">
+            Are you sure you want to delete this project? Be careful because it
+            can't be undone.
+          </p>
+
+          <div className="flex gap-1">
+            <button
+              onClick={() => setShowModal(false)}
+              className="bg-gray-500 text-gray-50 px-2 py-1 rounded text-xs hover:opacity-80 transition-opacity delay-75"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => deleteProject({ id })}
+              className="bg-red-500 text-red-50 px-2 py-1 rounded text-xs hover:opacity-80 transition-opacity delay-75"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
       <div className="my-8">
         <h4 className="text-four font-bold tracking-wider text-2xl mb-4">
           {data?.data?.title}
@@ -296,11 +184,10 @@ const ProjectDetail = () => {
             </button>
           </form>
           <button
-            disabled={deleteLoading}
-            onClick={() => deleteProject({ id })}
+            onClick={() => setShowModal(true)}
             className="bg-red-500 hover:opacity-50 transition-opacity delay-75 text-four font-semibold text-sm p-2 rounded"
           >
-            {deleteLoading ? <ButtonLoader /> : <>Delete Project</>}
+            Delete Project
           </button>
         </div>
       </div>
